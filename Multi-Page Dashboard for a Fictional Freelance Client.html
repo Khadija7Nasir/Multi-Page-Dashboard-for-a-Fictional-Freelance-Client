@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khadija Nasir - Admin Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* General Styles */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; display: flex; background: #f4f4f9; transition: background 0.3s, color 0.3s; }
+    body.dark { background: #121212; color: #fff; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px; background: #333; color: white; height: 100vh;
+      padding: 20px; position: fixed; top: 0; left: 0; transition: transform 0.3s ease;
+    }
+    .sidebar h2 { text-align: center; margin-bottom: 30px; }
+    .sidebar a {
+      display: block; color: white; text-decoration: none; padding: 10px;
+      margin: 10px 0; border-radius: 5px;
+    }
+    .sidebar a:hover { background: #575757; }
+    .sidebar.show { transform: translateX(0); }
+    .sidebar.hide { transform: translateX(-100%); }
+
+    /* Topbar */
+    .topbar {
+      background: #4CAF50; color: white; padding: 15px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      position: fixed; left: 220px; right: 0; top: 0; z-index: 1000;
+      transition: left 0.3s;
+    }
+    .topbar .menu-btn { display: none; font-size: 24px; cursor: pointer; }
+    .topbar .actions { display: flex; align-items: center; gap: 15px; }
+    .topbar button { padding: 6px 10px; border: none; border-radius: 5px; cursor: pointer; }
+
+    /* Notifications */
+    .notifications { position: relative; }
+    .notif-btn { background: #333; color: white; padding: 6px 10px; border: none; border-radius: 5px; cursor: pointer; }
+    .notif-dropdown {
+      display: none; position: absolute; top: 40px; right: 0;
+      background: white; color: black; width: 250px; border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;
+    }
+    body.dark .notif-dropdown { background: #222; color: white; }
+    .notif-dropdown ul { list-style: none; }
+    .notif-dropdown li { padding: 10px; border-bottom: 1px solid #ddd; }
+    .notif-dropdown li:last-child { border-bottom: none; }
+
+    /* Content */
+    .content {
+      margin-left: 220px; padding: 80px 20px 20px; flex: 1; transition: margin-left 0.3s;
+    }
+
+    /* Cards */
+    .cards { display: flex; gap: 20px; flex-wrap: wrap; }
+    .card {
+      background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      flex: 1; min-width: 200px; transition: background 0.3s, color 0.3s;
+    }
+    body.dark .card { background: #1e1e1e; color: white; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    body.dark table { border-color: #555; }
+    body.dark th, body.dark td { border-color: #555; }
+
+    /* Chart */
+    #earningsChart { max-width: 300px; max-height: 200px; margin-top: 20px; }
+
+    /* Recent Activities */
+    .activities {
+      margin-top: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .activities h2 { margin-bottom: 15px; }
+    .activities ul { list-style: none; }
+    .activities li {
+      padding: 10px 0; border-bottom: 1px solid #ddd;
+    }
+    .activities li:last-child { border-bottom: none; }
+    body.dark .activities { background: #1e1e1e; }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); position: fixed; }
+      .sidebar.show { transform: translateX(0); }
+      .topbar { left: 0; }
+      .topbar .menu-btn { display: block; }
+      .content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <h2>Dashboard</h2>
+    <a href="#" onclick="showPage('overview')">Overview</a>
+    <a href="#" onclick="showPage('projects')">Projects</a>
+    <a href="#" onclick="showPage('profile')">Profile</a>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+    <h2>Admin Panel</h2>
+    <div class="actions">
+      <div class="notifications">
+        <button class="notif-btn" onclick="toggleNotif()">🔔</button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <ul>
+            <li>Project "E-commerce Website" updated</li>
+            <li>New task assigned in "Portfolio Redesign"</li>
+            <li>Password changed successfully</li>
+          </ul>
+        </div>
+      </div>
+      <button onclick="toggleDarkMode()">🌙 Toggle</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content">
+    <!-- Overview Page -->
+    <div id="overview" class="page">
+      <h1>Overview</h1>
+      <div class="cards">
+        <div class="card">Total Projects: 12</div>
+        <div class="card">Earnings: $45,000</div>
+        <div class="card">Tasks Due: 5</div>
+      </div>
+      <canvas id="earningsChart"></canvas>
+
+      <!-- Recent Activities Section -->
+      <div class="activities">
+        <h2>Recent Activities</h2>
+        <ul>
+          <li>✔ Completed "Portfolio Redesign" project</li>
+          <li>📌 New task added in "E-commerce Website"</li>
+          <li>⚡ Server maintenance scheduled for 2025-09-01</li>
+          <li>👤 Profile information updated</li>
+          <li>💰 Received $5,000 payment for Mobile App project</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Projects Page -->
+    <div id="projects" class="page" style="display:none;">
+      <h1>Projects</h1>
+      <table>
+        <tr><th>Project</th><th>Status</th><th>Deadline</th></tr>
+        <tr><td>E-commerce Website</td><td>In Progress</td><td>2025-09-15</td></tr>
+        <tr><td>Portfolio Redesign</td><td>Completed</td><td>2025-07-30</td></tr>
+        <tr><td>Mobile App Development</td><td>Pending</td><td>2025-10-10</td></tr>
+      </table>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profile" class="page" style="display:none;">
+      <h1>Profile Settings</h1>
+      <form>
+        <label>Name:</label><br>
+        <input type="text" value="Khadija Nasir"><br><br>
+        <label>Email:</label><br>
+        <input type="email" value="raok2527@gmail.com"><br><br>
+        <label>Password:</label><br>
+        <input type="password" placeholder="********"><br><br>
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+      document.getElementById(page).style.display = 'block';
+      document.getElementById("sidebar").classList.remove("show");
+    }
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("show");
+    }
+
+    function toggleNotif() {
+      document.getElementById("notifDropdown").style.display =
+        document.getElementById("notifDropdown").style.display === "block" ? "none" : "block";
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    // Chart.js small bar chart
+    const ctx = document.getElementById('earningsChart');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+          label: 'Earnings ($)',
+          data: [5000, 7000, 4000, 6000, 8000],
+          backgroundColor: '#4CAF50'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  </script>
+</body>
+</html>
